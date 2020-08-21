@@ -8,6 +8,10 @@ void pushNewEntry(BuildContext context) {
   Navigator.of(context).pushNamed(NewEntry.routeName);
 }
 
+void pushEditEntry(BuildContext context) {
+  Navigator.of(context).pushNamed(EditEntry.routeName);
+}
+
 void pushDetail(BuildContext context) {
   Navigator.of(context).pushNamed(Detail.routeName);
 }

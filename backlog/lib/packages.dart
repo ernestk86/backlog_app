@@ -7,4 +7,5 @@ export 'backlog.dart';
 export 'screens/backlogList.dart';
 export 'screens/detail.dart';
 export 'screens/newEntry.dart';
+export 'screens/editEntry.dart';
 export 'screens/completedList.dart';

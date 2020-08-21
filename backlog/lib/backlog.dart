@@ -13,6 +13,7 @@ class Backlog extends StatefulWidget {
     BacklogList.routeName: (context) => BacklogList(),
     Detail.routeName: (context) => Detail(),
     NewEntry.routeName: (context) => NewEntry(),
+    EditEntry.routeName: (context) => EditEntry(),
     CompletedList.routeName: (context) => CompletedList(),
   };
 

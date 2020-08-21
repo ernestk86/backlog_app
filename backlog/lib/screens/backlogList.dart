@@ -8,7 +8,7 @@ import 'detail.dart';
 class BacklogList extends StatefulWidget {
   BacklogList({Key key}) : super(key: key);
 
-  static const routeName = 'backlogList';
+  static const routeName = '/';
 
   @override
   _BacklogListState createState() => _BacklogListState();
@@ -21,7 +21,7 @@ class _BacklogListState extends State<BacklogList> {
   @override
   Widget build(BuildContext context) {
     //Order documents by their date
-    backDB.collection("backlog").orderBy("media");
+    backDB.collection("backlog").orderBy("media", descending: true);
 
     return StreamBuilder(
       stream: Firestore.instance.collection('backlog').snapshots(),
@@ -35,8 +35,7 @@ class _BacklogListState extends State<BacklogList> {
               centerTitle: true,
             ),
 
-            //This is solely to TEST CRASH FEATURES
-            endDrawer: viewSetting(context, 'backlog'),
+            endDrawer: viewSetting(context, true),
 
             body: ListView.builder(
               itemCount: snapshot.data.documents.length,
@@ -58,6 +57,7 @@ class _BacklogListState extends State<BacklogList> {
                     selectedConsole = entry['console'];
                     selectedCompleted = entry['completed'];
                     selectedNotes = entry['notes'];
+                    selectedDoc = entry['documentID'];
                     pushDetail(context);
                   },
                 );
@@ -100,6 +100,8 @@ class _BacklogListState extends State<BacklogList> {
                 child: Icon(Icons.camera_alt)
               ),
             ),
+
+            endDrawer: viewSetting(context, true),
           );
         }
       }

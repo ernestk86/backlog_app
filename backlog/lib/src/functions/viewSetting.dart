@@ -2,7 +2,7 @@ import 'package:backlog/src/models/darkSwitch.dart';
 import 'package:backlog/src/routing.dart';
 import 'package:flutter/material.dart';
 
-Widget viewSetting(BuildContext context, String currentScreen) {
+Widget viewSetting(BuildContext context, bool backlogScreen) {
 
   return Drawer(
     child: ListView(
@@ -18,7 +18,7 @@ Widget viewSetting(BuildContext context, String currentScreen) {
           trailing:  RaisedButton(
             child: Text('Switch'),
             onPressed: () {
-              if (currentScreen == 'backlog') {
+              if (backlogScreen) {
                 pushCompletedList(context);
               } else {
                 pushBacklogList(context);

@@ -8,7 +8,7 @@ import 'detail.dart';
 class CompletedList extends StatefulWidget {
   CompletedList({Key key}) : super(key: key);
 
-  static const routeName = '/';
+  static const routeName = 'completedList';
 
   @override
   _CompletedListState createState() => _CompletedListState();
@@ -35,8 +35,7 @@ class _CompletedListState extends State<CompletedList> {
               centerTitle: true,
             ),
 
-            //This is solely to TEST CRASH FEATURES
-            endDrawer: viewSetting(context, 'completed'),
+            endDrawer: viewSetting(context, false),
 
             body: ListView.builder(
               itemCount: snapshot.data.documents.length,
@@ -58,6 +57,7 @@ class _CompletedListState extends State<CompletedList> {
                     selectedConsole = entry['console'];
                     selectedCompleted = entry['completed'];
                     selectedNotes = entry['notes'];
+                    selectedDoc = entry['documentID'];
                     pushDetail(context);
                   },
                 );
@@ -83,7 +83,7 @@ class _CompletedListState extends State<CompletedList> {
           return Scaffold(
     
             appBar: AppBar(
-              title: Text('Backlog'),
+              title: Text('Completed'),
               centerTitle: true,
             ),
 
@@ -100,6 +100,8 @@ class _CompletedListState extends State<CompletedList> {
                 child: Icon(Icons.camera_alt)
               ),
             ),
+
+            endDrawer: viewSetting(context, false),
           );
         }
       }
