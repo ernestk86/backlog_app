@@ -6,7 +6,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import '../packages.dart';
 import '../src/consoles.dart';
 import '../src/mediaTypes.dart';
-//import 'package:location/location.dart';
 import 'package:image_picker/image_picker.dart';
 import '../src/routing.dart';
 
@@ -21,10 +20,7 @@ class _NewEntryState extends State<NewEntry> {
   final formKey = GlobalKey<FormState>();
   File image;
   final picker = ImagePicker();
-  
-  int quantity = -34;
   final backDB = Firestore.instance;
-  //LocationData locationData;
 
   //Input Data
   String url, title, genre, notes, media, console;
@@ -125,30 +121,20 @@ class _NewEntryState extends State<NewEntry> {
   @override
   void initState() {
     super.initState();
-    //retrieveLocation();
     getImage();
   }
-
-  // void retrieveLocation() async {
-  //   var locationService = Location();
-  //   locationData = await locationService.getLocation();
-  //   setState( ( ) {  } );
-  // }
 
   @override
   Widget build(BuildContext context) {
     AppBar appbar = AppBar(
-      title: Text('Entry Information'),
+      title: Text('New Entry'),
       centerTitle: true,
     );
 
     //If image is loading into widget
     if (image == null) {
       return Scaffold(
-        appBar: AppBar(
-          title: Text('New Entry'),
-          centerTitle: true,
-        ),
+        appBar: appbar,
 
         body: Center(child: CircularProgressIndicator()),
 
@@ -165,10 +151,7 @@ class _NewEntryState extends State<NewEntry> {
     } else {
       if (MediaQuery.of(context).orientation == Orientation.portrait) {
         return Scaffold(
-          appBar: AppBar(
-            title: Text('New Entry'),
-            centerTitle: true,
-          ),
+          appBar: appbar,
 
           body: Padding(
             padding: const EdgeInsets.all(10),
@@ -341,145 +324,175 @@ class _NewEntryState extends State<NewEntry> {
 
           body: Padding(
             padding: const EdgeInsets.all(10),
-            child: Column(
-              children:<Widget> [
-                Center(child: Text(selectedTitle, style: TextStyle(fontSize: 30))),
-                SizedBox(height: 8),
+            child: Form(
+              key: formKey,
+              child: Column(
+                children:<Widget> [
+                  Row(children: [
+                    SizedBox(
+                      height: remainHeight,
+                      width: remainWidth / 2,
+                      child: Column(children: [
+                        //IMAGE
+                        Flexible(
+                          child: Image.file(image),
+                          flex: 1,
+                        ),
 
-                Row(children: [
-                  SizedBox(
-                    height: remainHeight,
-                    width: remainWidth / 2,
-                    child: Column(children: [
-                      //IMAGE
-                      Flexible(
-                        child: Image.file(image),
-                        flex: 1,
-                      ),
-
-                      CheckboxListTile(
-                        title: const Text('Completed'),
-                        value: completed,
-                        onChanged: (value) {
-                          setState(() {
-                            completed = value;
-                          });
-                        },
-                      ),
-                    ]), 
-                  ),
-
-                  SizedBox(
-                    height: remainHeight,
-                    width: remainWidth / 2,
-                    child: Column(children: [
-                      //TITLE
-                      Flexible(
-                        flex: 1,
-                        child: TextFormField(                   
-                          autofocus: true,
-                          decoration: const InputDecoration(labelText: 'Title'),
-                          onSaved: (value) {
-                            if (value.isNotEmpty) {
-                              title = value;
-                            }
-                          },
-                          validator: (value) {
-                            if (value.isEmpty) {
-                              return 'Title';
-                            } else {
-                              return null;
-                            }
+                        CheckboxListTile(
+                          title: const Text('Completed'),
+                          value: completed,
+                          onChanged: (value) {
+                            setState(() {
+                              completed = value;
+                            });
                           },
                         ),
-                      ),
+                      ]), 
+                    ),
 
-                      //GENRE
-                      Flexible(
-                        flex: 1,
-                        child: TextFormField(                   
-                          autofocus: true,
-                          decoration: const InputDecoration(labelText: 'Genre'),
-                          onSaved: (value) {
-                            if (value.isNotEmpty) {
-                              genre = value;
-                            }
-                          },
-                          validator: (value) {
-                            if (value.isEmpty) {
-                              return 'Genre';
-                            } else {
-                              return null;
-                            }
-                          },
+                    SizedBox(
+                      height: remainHeight,
+                      width: remainWidth / 2,
+                      child: Column(children: [
+                        //TITLE
+                        Flexible(
+                          flex: 1,
+                          child: TextFormField(                   
+                            autofocus: true,
+                            decoration: const InputDecoration(labelText: 'Title'),
+                            onSaved: (value) {
+                              if (value.isNotEmpty) {
+                                title = value;
+                              }
+                            },
+                            validator: (value) {
+                              if (value.isEmpty) {
+                                return 'Title';
+                              } else {
+                                return null;
+                              }
+                            },
+                          ),
                         ),
-                      ),
-                      
-                      //NOTES
-                      Flexible(
-                        flex: 3,
-                        child: TextFormField(                   
-                          autofocus: true,
-                          decoration: const InputDecoration(labelText: 'Notes'),
-                          onSaved: (value) {
-                            if (value.isNotEmpty) {
-                              notes = value;
-                            }
-                          },
-                          validator: (value) {
-                            if (value.isEmpty) {
-                              return 'Notes';
-                            } else {
-                              return null;
-                            }
-                          },
+
+                        //GENRE
+                        Flexible(
+                          flex: 1,
+                          child: TextFormField(                   
+                            autofocus: true,
+                            decoration: const InputDecoration(labelText: 'Genre'),
+                            onSaved: (value) {
+                              if (value.isNotEmpty) {
+                                genre = value;
+                              }
+                            },
+                            validator: (value) {
+                              if (value.isEmpty) {
+                                return 'Genre';
+                              } else {
+                                return null;
+                              }
+                            },
+                          ),
                         ),
-                      ),
+                        
+                        //NOTES
+                        Flexible(
+                          flex: 3,
+                          child: TextFormField(                   
+                            autofocus: true,
+                            decoration: const InputDecoration(labelText: 'Notes'),
+                            onSaved: (value) {
+                              if (value.isNotEmpty) {
+                                notes = value;
+                              }
+                            },
+                            validator: (value) {
+                              if (value.isEmpty) {
+                                return 'Notes';
+                              } else {
+                                return null;
+                              }
+                            },
+                          ),
+                        ),
 
-                      //MEDIA TYPE
-                      DropDownFormField(
-                        titleText: 'Media Type',
-                        hintText: 'Please choose one',
-                        value: media,
-                        onSaved: (value) {
-                          setState(() {
-                            media = value;
-                          });
-                        },
-                        onChanged: (value) {
-                          setState(() {
-                            media = value;
-                          });
-                        },
-                        dataSource: mediaTypes,
-                        textField: 'display',
-                        valueField: 'value',
-                      ),
+                        //MEDIA TYPE
+                        DropDownFormField(
+                          titleText: 'Media Type',
+                          hintText: 'Please choose one',
+                          value: media,
+                          onSaved: (value) {
+                            setState(() {
+                              media = value;
+                            });
+                          },
+                          onChanged: (value) {
+                            setState(() {
+                              media = value;
+                            });
+                          },
+                          dataSource: mediaTypes,
+                          textField: 'display',
+                          valueField: 'value',
+                        ),
 
-                      //CONSOLE
-                      DropDownFormField(
-                        titleText: 'Console',
-                        hintText: 'Please choose one',
-                        value: console,
-                        onSaved: (value) {
-                          setState(() {
-                            console = value;
-                          });
-                        },
-                        onChanged: (value) {
-                          setState(() {
-                            console = value;
-                          });
-                        },
-                        dataSource: consoles,
-                        textField: 'display',
-                        valueField: 'value',
-                      ),
-                    ]), 
-                  ),
-                ])
-              ]
+                        //CONSOLE
+                        DropDownFormField(
+                          titleText: 'Console',
+                          hintText: 'Please choose one',
+                          value: console,
+                          onSaved: (value) {
+                            setState(() {
+                              console = value;
+                            });
+                          },
+                          onChanged: (value) {
+                            setState(() {
+                              console = value;
+                            });
+                          },
+                          dataSource: consoles,
+                          textField: 'display',
+                          valueField: 'value',
+                        ),
+                      ]), 
+                    ),
+                  ])
+                ]
+              ),
             ),               
+          ),
+
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButton: Semantics(
+            child: FloatingActionButton(
+              onPressed: () {
+                formKey.currentState.save();
+                if (title != null && genre != null && notes != null) {
+                  postImage();
+                  pushBacklogList(context);
+                } else {
+                  showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      title: Text('You didn\'t enter an entry!'),
+                      content: Text('Fill out the Title, Genre, and Notes please'),
+                      actions: <Widget>[
+                        FlatButton(child: Text('Alright ok!'), onPressed: () {Navigator.of(context).pop();},),
+                        FlatButton(child: Text('I guess...'), onPressed: () {Navigator.of(context).pop();},),
+                      ],
+                    ),
+                    barrierDismissible: true,
+                  );
+                }
+              },
+              tooltip: 'Post',
+              child: Icon(Icons.add),
+            ),
+            button: true,
+            enabled: true,
           ),
         );   
       }
