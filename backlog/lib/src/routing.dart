@@ -1,5 +1,6 @@
 import '../packages.dart';
 
+//Routes
 final routes = {
   BacklogList.routeName: (context) => BacklogList(),
   Detail.routeName: (context) => Detail(),
@@ -8,6 +9,7 @@ final routes = {
   CompletedList.routeName: (context) => CompletedList(),
 };
 
+//Route functions
 void goBack(BuildContext context) {
   Navigator.of(context).pop();
 }

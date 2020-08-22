@@ -1,12 +1,26 @@
-import 'package:backlog/packages.dart';
-import 'package:backlog/src/routing.dart';
-import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../packages.dart';
 
 Widget editDrawer(BuildContext context, bool completed, String doc) {
   DocumentReference entry;
   final backDB = Firestore.instance;
+
+  Future<void> addData(String console) async {
+    final newDoc = await backDB.collection('completed').add({
+      'title': selectedTitle,
+    });
+
+    newDoc.setData({
+      'imageURL': selectedImage,
+      'title': selectedTitle,
+      'date': DateTime.now(),
+      'media': selectedMedia,
+      'genre': selectedGenre,
+      'notes': selectedNotes,
+      'completed': true,
+      'console': console,
+      'documentID': newDoc.documentID,
+    });
+  }
 
   return Drawer(
     child: ListView(
@@ -18,11 +32,14 @@ Widget editDrawer(BuildContext context, bool completed, String doc) {
           indent: 10,
           endIndent: 10,
         ),
+
+        //Delete Button
         ListTile(
           title: const Text('Delete?'),
           trailing:  RaisedButton(
             child: Text('DELETE'),
             onPressed: () {
+              //Check which collection to delete
               if (completed) {
                 entry = backDB.collection('completed').document(doc);
                 entry.delete();
@@ -36,6 +53,7 @@ Widget editDrawer(BuildContext context, bool completed, String doc) {
           ),
         ),
 
+        //Edit button
         ListTile(
           title: const Text('Edit?'),
           trailing:  RaisedButton(
@@ -51,6 +69,8 @@ Widget editDrawer(BuildContext context, bool completed, String doc) {
           indent: 10,
           endIndent: 10,
         ),
+
+        //Complete button
         ListTile(
           title: const Text('Completed?'),
           trailing:  RaisedButton(
@@ -60,38 +80,9 @@ Widget editDrawer(BuildContext context, bool completed, String doc) {
                 entry = backDB.collection('backlog').document(doc);
                 entry.delete();
                 if (selectedMedia == 'Video Game') {
-                  final newDoc = await backDB.collection('completed').add({
-                    'title': selectedTitle,
-                  });
-
-                  newDoc.setData({
-                    'imageURL': selectedImage,
-                    'title': selectedTitle,
-                    'date': DateTime.now(),
-                    'media': selectedMedia,
-                    'genre': selectedGenre,
-                    'notes': selectedNotes,
-                    'completed': true,
-                    'console': selectedConsole,
-                    'documentID': newDoc.documentID,
-                  });
-
+                  addData(selectedConsole);
                 } else {
-                  final newDoc = await backDB.collection('completed').add({
-                    'title': selectedTitle,
-                  });
-
-                  newDoc.setData({
-                    'imageURL': selectedImage,
-                    'title': selectedTitle,
-                    'date': DateTime.now(),
-                    'media': selectedMedia,
-                    'genre': selectedGenre,
-                    'notes': selectedNotes,
-                    'completed': true,
-                    'console': 'N/A',
-                    'documentID': newDoc.documentID,
-                  });
+                  addData('N/A');
                 }
                 pushCompletedList(context);
               }

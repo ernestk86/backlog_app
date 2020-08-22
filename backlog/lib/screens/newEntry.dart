@@ -16,43 +16,8 @@ class _NewEntryState extends State<NewEntry> {
   final backDB = Firestore.instance;
 
   //Input data variables
-  String url, title, genre, notes, media, console;
+  String url, media, console;
   bool completed = false;
-
-  //Save input text
-  Flexible inputText(String field, int flexValue) {
-    return Flexible(
-      flex: flexValue,
-      child: TextFormField(                   
-        autofocus: true,
-        decoration: InputDecoration(labelText: field),
-        onSaved: (value) {
-          if (value.isNotEmpty) {
-            if (field == 'Title') {
-              title = value;
-            } else if (field == 'Genre') {
-              genre = value;
-            } else if (field == 'Notes') {
-              notes = value;
-            }
-          }
-        },
-        validator: (value) {
-          if (value.isEmpty) {
-            if (field == 'Title') {
-              return 'Title';
-            } else if (field == 'Genre') {
-              return 'Genre';
-            } else if (field == 'Notes') {
-              return 'Notes';
-            }
-          } else {
-            return null;
-          }
-        },
-      ),
-    );
-  }
 
   //Load selected image into widget
   Future getImage() async {
@@ -64,10 +29,12 @@ class _NewEntryState extends State<NewEntry> {
 
   //Add data to database
   Future<void> addData(String collectionName, String consoleName) async {
+    //Create new document reference to grab document ID
     final newDoc = await backDB.collection(collectionName).add({
       'title': title,
     });
 
+    //Set data in place in new document
     newDoc.setData({
       'imageURL': url,
       'title': title,
@@ -83,6 +50,7 @@ class _NewEntryState extends State<NewEntry> {
 
   //Send data to firebase storage and cloud database
   Future postImage() async {
+    //Uploading image onto storage
     String base = basename(image.path);
     StorageReference storageReference = 
       FirebaseStorage.instance.ref().child(base);
@@ -90,6 +58,7 @@ class _NewEntryState extends State<NewEntry> {
     await uploadTask.onComplete;
     url = await storageReference.getDownloadURL();
 
+    //Logic to add entry to database
     if (completed) {
       if (media == 'Video Game') {
         addData('completed', console);
@@ -103,6 +72,59 @@ class _NewEntryState extends State<NewEntry> {
         addData('backlog', 'N/A');
       }
     }
+  }
+
+  //Button to post image
+  Semantics postButton(BuildContext context) {
+    return Semantics(
+      child: FloatingActionButton(
+        onPressed: () {
+          formKey.currentState.save();
+          if (title != null && genre != null && notes != null) {
+            postImage();
+            pushBacklogList(context);
+          } else {
+            showDialog(
+              context: context,
+              builder: (_) => AlertDialog(
+                title: Text('You didn\'t enter an entry!'),
+                content: Text('Fill out the Title, Genre, and Notes please'),
+                actions: <Widget>[
+                  FlatButton(child: Text('Alright ok!'), onPressed: () {Navigator.of(context).pop();},),
+                  FlatButton(child: Text('I guess...'), onPressed: () {Navigator.of(context).pop();},),
+                ],
+              ),
+              barrierDismissible: true,
+            );
+          }
+        },
+        tooltip: 'Post',
+        child: Icon(Icons.add),
+      ),
+      button: true,
+      enabled: true,
+    );
+  }
+
+  //Completed check box
+  CheckboxListTile completedBox() {
+    return CheckboxListTile(
+      title: const Text('Completed'),
+      value: completed,
+      onChanged: (value) {
+        setState(() {
+          completed = value;
+        });
+      },
+    );
+  }
+
+  //Image
+  Flexible showImage(int flexValue) {
+    return Flexible(
+      child: Image.file(image),
+      flex: flexValue,
+    );
   }
 
   //Grab image as soon as screen opens
@@ -139,10 +161,7 @@ class _NewEntryState extends State<NewEntry> {
                 children: <Widget> [
 
                   //IMAGE
-                  Flexible(
-                    child: Image.file(image),
-                    flex: 3,
-                  ),
+                  showImage(3),
 
                   //TITLE
                   inputText('Title', 1),
@@ -193,53 +212,23 @@ class _NewEntryState extends State<NewEntry> {
                     valueField: 'value',
                   ),
 
-                  CheckboxListTile(
-                    title: const Text('Completed'),
-                    value: completed,
-                    onChanged: (value) {
-                      setState(() {
-                        completed = value;
-                      });
-                    },
-                  ),
+                  //COMPLETED CHECKBOX
+                  completedBox(),
 
                 ]
               )
             ),
           ),
 
+          //Button to post entry
           floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-          floatingActionButton: Semantics(
-            child: FloatingActionButton(
-              onPressed: () {
-                formKey.currentState.save();
-                if (title != null && genre != null && notes != null) {
-                  postImage();
-                  pushBacklogList(context);
-                } else {
-                  showDialog(
-                    context: context,
-                    builder: (_) => AlertDialog(
-                      title: Text('You didn\'t enter an entry!'),
-                      content: Text('Fill out the Title, Genre, and Notes please'),
-                      actions: <Widget>[
-                        FlatButton(child: Text('Alright ok!'), onPressed: () {Navigator.of(context).pop();},),
-                        FlatButton(child: Text('I guess...'), onPressed: () {Navigator.of(context).pop();},),
-                      ],
-                    ),
-                    barrierDismissible: true,
-                  );
-                }
-              },
-              tooltip: 'Post',
-              child: Icon(Icons.add),
-            ),
-            button: true,
-            enabled: true,
-          ),
+          floatingActionButton: postButton(context),
         );
+
+      //Landscape Orientation  
       } else {
-        var remainHeight = MediaQuery.of(context).size.height - 150;
+        //Remaining space on screen after accounting for appbar, padding, etc...
+        var remainHeight = MediaQuery.of(context).size.height - 120;
         var remainWidth = MediaQuery.of(context).size.width - 24;
         
         return Scaffold(
@@ -251,95 +240,37 @@ class _NewEntryState extends State<NewEntry> {
               key: formKey,
               child: Column(
                 children:<Widget> [
+                  //In landscape screen is split in half horizontally
                   Row(children: [
+
+                    //Left half of screen
                     SizedBox(
                       height: remainHeight,
                       width: remainWidth / 2,
                       child: Column(children: [
                         //IMAGE
-                        Flexible(
-                          child: Image.file(image),
-                          flex: 1,
-                        ),
+                        showImage(1),
 
-                        CheckboxListTile(
-                          title: const Text('Completed'),
-                          value: completed,
-                          onChanged: (value) {
-                            setState(() {
-                              completed = value;
-                            });
-                          },
-                        ),
+                        //COMPLETED BOX
+                        completedBox(),
                       ]), 
                     ),
 
+                    Spacer(),
+
+                    //Right half of screen
                     SizedBox(
                       height: remainHeight,
                       width: remainWidth / 2,
                       child: Column(children: [
                         //TITLE
-                        Flexible(
-                          flex: 1,
-                          child: TextFormField(                   
-                            autofocus: true,
-                            decoration: const InputDecoration(labelText: 'Title'),
-                            onSaved: (value) {
-                              if (value.isNotEmpty) {
-                                title = value;
-                              }
-                            },
-                            validator: (value) {
-                              if (value.isEmpty) {
-                                return 'Title';
-                              } else {
-                                return null;
-                              }
-                            },
-                          ),
-                        ),
+                        inputText('Title', 1),
 
                         //GENRE
-                        Flexible(
-                          flex: 1,
-                          child: TextFormField(                   
-                            autofocus: true,
-                            decoration: const InputDecoration(labelText: 'Genre'),
-                            onSaved: (value) {
-                              if (value.isNotEmpty) {
-                                genre = value;
-                              }
-                            },
-                            validator: (value) {
-                              if (value.isEmpty) {
-                                return 'Genre';
-                              } else {
-                                return null;
-                              }
-                            },
-                          ),
-                        ),
+                        inputText('Genre', 1),
                         
                         //NOTES
-                        Flexible(
-                          flex: 3,
-                          child: TextFormField(                   
-                            autofocus: true,
-                            decoration: const InputDecoration(labelText: 'Notes'),
-                            onSaved: (value) {
-                              if (value.isNotEmpty) {
-                                notes = value;
-                              }
-                            },
-                            validator: (value) {
-                              if (value.isEmpty) {
-                                return 'Notes';
-                              } else {
-                                return null;
-                              }
-                            },
-                          ),
-                        ),
+                        inputText('Notes', 3),
 
                         //MEDIA TYPE
                         DropDownFormField(
@@ -388,35 +319,9 @@ class _NewEntryState extends State<NewEntry> {
             ),               
           ),
 
+          //Button to post entry
           floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-          floatingActionButton: Semantics(
-            child: FloatingActionButton(
-              onPressed: () {
-                formKey.currentState.save();
-                if (title != null && genre != null && notes != null) {
-                  postImage();
-                  pushBacklogList(context);
-                } else {
-                  showDialog(
-                    context: context,
-                    builder: (_) => AlertDialog(
-                      title: Text('You didn\'t enter an entry!'),
-                      content: Text('Fill out the Title, Genre, and Notes please'),
-                      actions: <Widget>[
-                        FlatButton(child: Text('Alright ok!'), onPressed: () {Navigator.of(context).pop();},),
-                        FlatButton(child: Text('I guess...'), onPressed: () {Navigator.of(context).pop();},),
-                      ],
-                    ),
-                    barrierDismissible: true,
-                  );
-                }
-              },
-              tooltip: 'Post',
-              child: Icon(Icons.add),
-            ),
-            button: true,
-            enabled: true,
-          ),
+          floatingActionButton: postButton(context),
         );   
       }
     }

@@ -18,8 +18,11 @@ StreamBuilder entryList(String screenTitle, String collectionName, bool backlogS
           body: ListView.builder(
             itemCount: snapshot.data.documents.length,
             itemBuilder: (context, index) {
+              //Grab entry
               var entry = snapshot.data.documents[index];
+              //Extract date
               DateTime dateTime = entry['date'].toDate();
+              //Convert date to string
               String abbrevDate = abbrevDays[dateTime.weekday] + ', ' + abbrevMonths[dateTime.month] + ' ' + dateTime.day.toString() + ', ' + dateTime.year.toString();
 
               return ListTile(

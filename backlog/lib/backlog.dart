@@ -1,4 +1,4 @@
-import 'package:backlog/packages.dart';
+import 'packages.dart';
 import 'package:sentry/sentry.dart';
 
 //Setup for crash reporting
@@ -47,7 +47,6 @@ class BacklogState extends State<Backlog> {
     setState(() {
       dark = !dark;
     });
-
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool('dark', dark);
   }  

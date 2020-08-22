@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
-import '../../backlog.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../../packages.dart';
 
 class DarkSwitch extends StatefulWidget {
   DarkSwitch({Key key}) : super(key: key);
@@ -18,6 +16,7 @@ class _DarkSwitchState extends State<DarkSwitch> {
     initDark();
   }
 
+  //Grab previously used settings
   void initDark() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
