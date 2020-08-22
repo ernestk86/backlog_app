@@ -1,15 +1,7 @@
-import 'dart:io';
-import 'package:path/path.dart';
-import 'package:dropdown_formfield/dropdown_formfield.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import '../packages.dart';
-import '../src/consoles.dart';
-import '../src/mediaTypes.dart';
-import 'package:image_picker/image_picker.dart';
-import '../src/routing.dart';
 
 class NewEntry extends StatefulWidget {
+  //Routing
   static const routeName = 'newEntry';
 
   @override
@@ -17,21 +9,75 @@ class NewEntry extends StatefulWidget {
 }
 
 class _NewEntryState extends State<NewEntry> {
+  //Form and database setup
   final formKey = GlobalKey<FormState>();
   File image;
   final picker = ImagePicker();
   final backDB = Firestore.instance;
 
-  //Input Data
+  //Input data variables
   String url, title, genre, notes, media, console;
   bool completed = false;
 
+  //Save input text
+  Flexible inputText(String field, int flexValue) {
+    return Flexible(
+      flex: flexValue,
+      child: TextFormField(                   
+        autofocus: true,
+        decoration: InputDecoration(labelText: field),
+        onSaved: (value) {
+          if (value.isNotEmpty) {
+            if (field == 'Title') {
+              title = value;
+            } else if (field == 'Genre') {
+              genre = value;
+            } else if (field == 'Notes') {
+              notes = value;
+            }
+          }
+        },
+        validator: (value) {
+          if (value.isEmpty) {
+            if (field == 'Title') {
+              return 'Title';
+            } else if (field == 'Genre') {
+              return 'Genre';
+            } else if (field == 'Notes') {
+              return 'Notes';
+            }
+          } else {
+            return null;
+          }
+        },
+      ),
+    );
+  }
 
   //Load selected image into widget
   Future getImage() async {
     final pickedFile = await picker.getImage(source: ImageSource.gallery);
     setState(() {
       image = File(pickedFile.path);
+    });
+  }
+
+  //Add data to database
+  Future<void> addData(String collectionName, String consoleName) async {
+    final newDoc = await backDB.collection(collectionName).add({
+      'title': title,
+    });
+
+    newDoc.setData({
+      'imageURL': url,
+      'title': title,
+      'date': DateTime.now(),
+      'media': media,
+      'genre': genre,
+      'notes': notes,
+      'completed': completed,
+      'console': consoleName,
+      'documentID': newDoc.documentID,
     });
   }
 
@@ -46,78 +92,20 @@ class _NewEntryState extends State<NewEntry> {
 
     if (completed) {
       if (media == 'Video Game') {
-        final newDoc = await backDB.collection('completed').add({
-          'title': title,
-        });
-
-        newDoc.setData({
-          'imageURL': url,
-          'title': title,
-          'date': DateTime.now(),
-          'media': media,
-          'genre': genre,
-          'notes': notes,
-          'completed': completed,
-          'console': console,
-          'documentID': newDoc.documentID,
-        });
-
+        addData('completed', console);
       } else {
-        final newDoc = await backDB.collection('completed').add({
-          'title': title,
-        });
-
-        newDoc.setData({
-          'imageURL': url,
-          'title': title,
-          'date': DateTime.now(),
-          'media': media,
-          'genre': genre,
-          'notes': notes,
-          'completed': completed,
-          'console': 'N/A',
-          'documentID': newDoc.documentID,
-        });
+        addData('completed', 'N/A');
       }
-
     } else {
       if (media == 'Video Game') {
-        final newDoc = await backDB.collection('backlog').add({
-          'title': title,
-        });
-
-        newDoc.setData({
-          'imageURL': url,
-          'title': title,
-          'date': DateTime.now(),
-          'media': media,
-          'genre': genre,
-          'notes': notes,
-          'completed': completed,
-          'console': console,
-          'documentID': newDoc.documentID,
-        });
-
+        addData('backlog', console);
       } else {
-        final newDoc = await backDB.collection('backlog').add({
-          'title': title,
-        });
-
-        newDoc.setData({
-          'imageURL': url,
-          'title': title,
-          'date': DateTime.now(),
-          'media': media,
-          'genre': genre,
-          'notes': notes,
-          'completed': completed,
-          'console': 'N/A',
-          'documentID': newDoc.documentID,
-        });
+        addData('backlog', 'N/A');
       }
     }
   }
 
+  //Grab image as soon as screen opens
   @override
   void initState() {
     super.initState();
@@ -133,22 +121,11 @@ class _NewEntryState extends State<NewEntry> {
 
     //If image is loading into widget
     if (image == null) {
-      return Scaffold(
-        appBar: appbar,
+      return emptyList('New Entry', context);
 
-        body: Center(child: CircularProgressIndicator()),
-
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            
-          },
-          tooltip: 'Post',
-          child: Icon(Icons.add),
-        ),
-      );
     //Image is loaded
     } else {
+      //Portrait orientation
       if (MediaQuery.of(context).orientation == Orientation.portrait) {
         return Scaffold(
           appBar: appbar,
@@ -168,67 +145,13 @@ class _NewEntryState extends State<NewEntry> {
                   ),
 
                   //TITLE
-                  Flexible(
-                    flex: 1,
-                    child: TextFormField(                   
-                      autofocus: true,
-                      decoration: const InputDecoration(labelText: 'Title'),
-                      onSaved: (value) {
-                        if (value.isNotEmpty) {
-                          title = value;
-                        }
-                      },
-                      validator: (value) {
-                        if (value.isEmpty) {
-                          return 'Title';
-                        } else {
-                          return null;
-                        }
-                      },
-                    ),
-                  ),
+                  inputText('Title', 1),
 
                   //GENRE
-                  Flexible(
-                    flex: 1,
-                    child: TextFormField(                   
-                      autofocus: true,
-                      decoration: const InputDecoration(labelText: 'Genre'),
-                      onSaved: (value) {
-                        if (value.isNotEmpty) {
-                          genre = value;
-                        }
-                      },
-                      validator: (value) {
-                        if (value.isEmpty) {
-                          return 'Genre';
-                        } else {
-                          return null;
-                        }
-                      },
-                    ),
-                  ),
+                  inputText('Genre', 1),
                   
                   //NOTES
-                  Flexible(
-                    flex: 1,
-                    child: TextFormField(                   
-                      autofocus: true,
-                      decoration: const InputDecoration(labelText: 'Notes'),
-                      onSaved: (value) {
-                        if (value.isNotEmpty) {
-                          notes = value;
-                        }
-                      },
-                      validator: (value) {
-                        if (value.isEmpty) {
-                          return 'Notes';
-                        } else {
-                          return null;
-                        }
-                      },
-                    ),
-                  ),
+                  inputText('Notes', 1),
 
                   //MEDIA TYPE
                   DropDownFormField(
